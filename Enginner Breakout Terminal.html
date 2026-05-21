@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STATION_03_SYSTEMS_ENGINEER</title>
+    <!-- Station 03: Systems Engineer Terminal -->
+    <style>
+        :root { --neon: #22ff22; --bg: #050805; --dim: #003300; --fail: #ff0000; }
+        body { background: var(--bg); color: var(--neon); font-family: 'Courier New', monospace; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; overflow: hidden; text-transform: uppercase; }
+        #monitor { width: 95%; max-width: 1000px; border: 3px solid var(--neon); padding: 30px; background: rgba(0, 15, 0, 0.95); position: relative; box-shadow: inset 0 0 20px rgba(34,255,34,0.1); }
+        
+        .grid-layout { display: grid; grid-template-columns: repeat(4, 80px); gap: 10px; margin: 20px auto; width: fit-content; }
+        .cell { width: 80px; height: 80px; border: 1px solid var(--dim); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.8rem; background: rgba(0, 34, 0, 0.2); }
+        .cell span { font-weight: bold; font-size: 1.1rem; color: #fff; }
+        
+        .maze-grid { display: grid; gap: 2px; margin: 10px auto; width: fit-content; background: #111; padding: 5px; border: 2px solid var(--neon); }
+        .m-cell { border: 1px solid #1a1a1a; display: flex; align-items: center; justify-content: center; font-size: 0.5rem; color: #222; }
+        .m-player { background: var(--neon) !important; box-shadow: 0 0 10px var(--neon); color: #000; font-weight: bold; }
+        .nav-round-badge { display: inline-block; font-size: 0.75rem; letter-spacing: 3px; color: #22ff22; border: 1px solid #003300; padding: 4px 14px; margin-bottom: 10px; background: rgba(34,255,34,0.07); }
+
+        .hidden { display: none; }
+        .btn { background: var(--neon); color: #000; border: none; padding: 15px 30px; font-family: inherit; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 1rem; }
+        #main-input { background: transparent; border: none; border-bottom: 2px solid var(--neon); color: var(--neon); font-family: inherit; font-size: 2rem; text-align: center; outline: none; width: 80%; margin-top: 20px; letter-spacing: 5px;}
+        #timer-bar { width: 100%; height: 12px; background: #001100; margin-bottom: 20px; border: 1px solid var(--dim); }
+        #timer-fill { width: 100%; height: 100%; background: var(--neon); }
+        .shake { animation: shake 0.4s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+        
+        .gate-box { background: rgba(34,255,34,0.1); border: 1px solid var(--dim); padding: 10px; margin: 5px 0; border-left: 4px solid var(--neon); }
+        .logic-hint { font-size: 0.7rem; color: #888; margin-top: 10px; text-transform: none; }
+
+        /* === ESCAPE ROOM POLISH === */
+        .station-id { font-size: 0.75rem; color: #1a6b1a; letter-spacing: 4px; margin-bottom: 6px; display: block; }
+        .room-title { font-size: 0.7rem; color: #1a6b1a; letter-spacing: 3px; text-align: right; position: absolute; top: 14px; right: 20px; }
+        .skill-tags { display: flex; gap: 10px; flex-wrap: wrap; margin: 18px 0 24px 0; }
+        .skill-tag {
+            border: 1px solid var(--neon);
+            color: var(--neon);
+            font-size: 0.72rem;
+            letter-spacing: 3px;
+            padding: 5px 14px;
+            background: rgba(34,255,34,0.06);
+            box-shadow: 0 0 8px rgba(34,255,34,0.15);
+        }
+        .skill-tag::before { content: "▸ "; }
+        .divider-line { border: none; border-top: 1px solid #1a4d1a; margin: 18px 0; }
+        .mission-block { border-left: 3px solid var(--neon); padding-left: 16px; margin: 16px 0; }
+        .mission-block p { margin: 6px 0; }
+        .status-line { font-size: 0.8rem; color: #3a8a3a; letter-spacing: 2px; margin-top: 20px; }
+        .coordinator-notice { font-size: 0.8rem; color: #22ff22; background: rgba(34,255,34,0.08); border: 1px dashed #003300; padding: 10px 14px; margin-top: 16px; letter-spacing: 2px; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+        .blink { animation: blink 1.4s infinite; }
+    </style>
+</head>
+<body>
+
+<div id="monitor">
+    <div id="intro">
+        <span class="room-title">ENGINEERING TERMINAL // STATION 03</span>
+        <span class="station-id">◈ SYSTEMS_ENGINEER_NODE // SUBSYSTEM FAILURE DETECTED</span>
+        <h1>STATION_03: SYSTEMS_ENGINEER</h1>
+
+        <div class="skill-tags">
+            <span class="skill-tag">MATH &amp; LOGIC</span>
+            <span class="skill-tag">SPATIAL REASONING</span>
+            <span class="skill-tag">SEQUENTIAL THINKING</span>
+        </div>
+
+        <hr class="divider-line">
+
+        <div class="mission-block">
+            <p><strong>MISSION:</strong> RESTORE SUBSYSTEM INTEGRITY // AUTHENTICATE FIVE ENGINEERING PROTOCOLS.</p>
+            <p style="font-size: 0.9rem; color: #3a8a3a; margin-top: 10px;">EACH PROTOCOL TESTS A CORE ENGINEERING DISCIPLINE. COMPLETE ALL FIVE TO RECOVER YOUR SYSTEM FRAGMENT.</p>
+        </div>
+
+        <hr class="divider-line">
+
+        <p class="status-line">STATUS: SUBSYSTEM FAILURE ACTIVE <span class="blink">▮</span> // REPAIR REQUIRED // 5 ENGINEERING PROTOCOLS</p>
+
+        <button class="btn" onclick="start()" style="margin-top: 28px;">INITIATE SYSTEM SYNC</button>
+    </div>
+
+    <div id="game-zone" class="hidden">
+        <div id="timer-bar" class="hidden"><div id="timer-fill"></div></div>
+        <h2 id="lvl-header">SUB-ROUTINE: 01</h2>
+        <p id="instruction" style="color:#fff; min-height: 45px; font-weight: bold;"></p>
+        <div id="stage-content"></div>
+        <div id="input-area">
+            <input type="text" id="main-input" autocomplete="off" placeholder="DATA ENTRY">
+            <div id="status-msg" style="margin-top:10px; height: 20px; color: var(--fail); font-weight: bold;"></div>
+            <button id="check-btn" class="btn" onclick="checkAnswer()">VALIDATE SYSTEM</button>
+        </div>
+    </div>
+
+    <div id="success" class="hidden" style="text-align: center;">
+        <h1 style="color: #fff;">SYSTEMS_OVERRIDE_SUCCESS</h1>
+        <p>RECONSTRUCTION COMPLETE. CORE FRAGMENT RECOVERED:</p>
+        <div style="font-size: 4rem; text-shadow: 0 0 20px var(--neon); margin: 20px 0; letter-spacing: 15px; border: 2px dashed var(--neon); padding: 20px;">INTEGRITY</div>
+        <p style="color: #fff;">THIS IS YOUR TEAM'S FRAGMENT. HOLD IT UNTIL ALL FRAGMENTS ARE COLLECTED.</p>
+    </div>
+</div>
+
+<script>
+let currentLvl = 1;
+let timerInterval;
+let timeLeft = 45;
+let playerPos = { x: 0, y: 0 };
+
+// Navigation sub-rounds: grid sizes and time limits are fixed; routes are generated fresh each attempt
+const navConfig = [
+    { gridSize: 15, steps: 7, time: 22 },
+    { gridSize: 18, steps: 8, time: 18 },
+    { gridSize: 20, steps: 9, time: 14 }
+];
+let navRound = 0;
+let navRounds = []; // generated fresh on each full attempt
+
+function generateNavRounds() {
+    navRounds = navConfig.map(cfg => buildRoute(cfg.gridSize, cfg.steps, cfg.time));
+}
+
+function buildRoute(gridSize, numSteps, time) {
+    const dirs = [{k:'x',pos:'R',neg:'L'},{k:'y',pos:'D',neg:'U'}];
+    let pos = {x:0, y:0};
+    let moves = [];
+    let routeParts = [];
+    const margin = 2;
+    let lastDirKey = null; // track last axis used to force alternation
+    for (let i = 0; i < numSteps; i++) {
+        // Always pick the axis that differs from the last move
+        const dir = dirs.find(d => d.k !== lastDirKey) || dirs[i % 2];
+        let attempts = 0;
+        let chosen;
+        while (attempts < 50) {
+            attempts++;
+            const maxStep = Math.max(2, Math.floor((gridSize * 0.45) - i));
+            const n = Math.floor(Math.random() * (maxStep - 1)) + 2;
+            const sign = Math.random() < 0.5 ? 1 : -1;
+            const delta = n * sign;
+            const newVal = pos[dir.k] + delta;
+            if (newVal >= margin && newVal < gridSize - margin) {
+                chosen = { dir, delta, n, sign };
+                break;
+            }
+        }
+        if (!chosen) continue;
+        pos[chosen.dir.k] += chosen.delta;
+        lastDirKey = chosen.dir.k;
+        const label = chosen.sign > 0 ? chosen.dir.pos : chosen.dir.neg;
+        moves.push({ d: chosen.dir.k, n: chosen.delta });
+        routeParts.push(`${label}${Math.abs(chosen.delta)}`);
+    }
+    return { gridSize, moves, route: routeParts.join(', '), time };
+}
+
+
+const content = document.getElementById('stage-content');
+const instr = document.getElementById('instruction');
+const header = document.getElementById('lvl-header');
+const mainInp = document.getElementById('main-input');
+const timerBar = document.getElementById('timer-bar');
+
+function start() {
+    document.getElementById('intro').classList.add('hidden');
+    document.getElementById('game-zone').classList.remove('hidden');
+    loadLevel();
+}
+
+function loadLevel() {
+    clearInterval(timerInterval);
+    content.innerHTML = "";
+    mainInp.value = "";
+    mainInp.classList.remove('hidden');
+    document.getElementById('check-btn').classList.remove('hidden');
+    timerBar.classList.add('hidden');
+    
+    if (currentLvl === 1) {
+        // Col totals: A=109, B=122(OVER), C=108, D=119(OVER), E=113
+        // Overload limit: 115. Two overloaded: B(122) and D(119). Answer = 122+119 = 241
+        header.innerText = "SUB-ROUTINE 01: POWER GRID BALANCING";
+        instr.innerHTML = `OVERLOAD LIMIT: <span style="color:var(--neon)">115 AMPS</span> PER COLUMN. SUM EACH COLUMN. TWO ARE OVERLOADED. ENTER THEIR <span style="color:var(--neon)">COMBINED TOTAL</span>.`;
+        content.innerHTML = `
+        <div style="font-size:0.72rem; color:#3a8a3a; margin-bottom:10px; letter-spacing:2px;">▸ SUM ALL 5 COLUMNS. IDENTIFY THE TWO THAT EXCEED 115. ADD THOSE TWO TOTALS TOGETHER AND ENTER THE RESULT.</div>
+        <div class="grid-layout" style="grid-template-columns: repeat(5, 72px); gap:8px;">
+            <div class="cell" style="width:72px">A1 <span>21</span></div><div class="cell" style="width:72px">B1 <span>34</span></div><div class="cell" style="width:72px">C1 <span>28</span></div><div class="cell" style="width:72px">D1 <span>17</span></div><div class="cell" style="width:72px">E1 <span>23</span></div>
+            <div class="cell" style="width:72px">A2 <span>18</span></div><div class="cell" style="width:72px">B2 <span>19</span></div><div class="cell" style="width:72px">C2 <span>14</span></div><div class="cell" style="width:72px">D2 <span>36</span></div><div class="cell" style="width:72px">E2 <span>31</span></div>
+            <div class="cell" style="width:72px">A3 <span>29</span></div><div class="cell" style="width:72px">B3 <span>22</span></div><div class="cell" style="width:72px">C3 <span>33</span></div><div class="cell" style="width:72px">D3 <span>27</span></div><div class="cell" style="width:72px">E3 <span>16</span></div>
+            <div class="cell" style="width:72px">A4 <span>24</span></div><div class="cell" style="width:72px">B4 <span>28</span></div><div class="cell" style="width:72px">C4 <span>19</span></div><div class="cell" style="width:72px">D4 <span>22</span></div><div class="cell" style="width:72px">E4 <span>19</span></div>
+            <div class="cell" style="width:72px">A5 <span>17</span></div><div class="cell" style="width:72px">B5 <span>19</span></div><div class="cell" style="width:72px">C5 <span>14</span></div><div class="cell" style="width:72px">D5 <span>17</span></div><div class="cell" style="width:72px">E5 <span>24</span></div>
+        </div>
+        <div style="font-size:0.72rem; color:#555; margin-top:10px; letter-spacing:1px; text-transform:none;">Enter a number. (e.g. if overloaded cols total 118 and 121, enter 239)</div>`;
+    } 
+    else if (currentLvl === 2) {
+        header.innerText = "SUB-ROUTINE 02: BLIND NAVIGATION";
+        navRound = 0;
+        generateNavRounds(); // fresh random routes for this attempt
+        loadNavRound();
+        return;
+    }
+    else if (currentLvl === 3) {
+        header.innerText = "SUB-ROUTINE 03: WEIGHT DISTRIBUTION";
+        instr.innerText = "WHICH COMPONENT IS THE LIGHTEST?";
+        content.innerHTML = `<div style="text-align:left; padding:20px; background:rgba(50,30,0,0.3); border:1px solid var(--dim); line-height: 1.6;">
+            1. THE GENERATOR IS HEAVIER THAN THE PUMP.<br>
+            2. THE PUMP IS HEAVIER THAN THE BATTERY.<br>
+            3. THE FAN IS LIGHTER THAN THE BATTERY.<br>
+            4. THE COOLER IS HEAVIER THAN THE GENERATOR.<br>
+            5. THE SENSOR IS LIGHTER THAN THE FAN.
+        </div>`;
+    }
+    else if (currentLvl === 4) {
+        header.innerText = "SUB-ROUTINE 04: SCHEMATIC PATTERN";
+        instr.innerText = "PREDICT THE NEXT VALUE: 12 -- 24 -- 21 -- 42 -- 39 -- [??]";
+    }
+    else if (currentLvl === 5) {
+        header.innerText = "SUB-ROUTINE 05: FINAL GATEWAY";
+        instr.innerText = "CALCULATE THE MASTER OVERRIDE KEY.";
+        content.innerHTML = `
+            <div style="text-align:left; font-size:0.85rem;">
+                INPUT SIGNALS: [A=1] [B=0] [C=1] [D=1]<br><br>
+                <div class="gate-box">GATE_1: (A AND B) = [??]</div>
+                <div class="gate-box">GATE_2: (C OR D) = [??]</div>
+                <div class="gate-box">GATE_3: (NOT GATE_1 result) = [??]</div>
+                <div class="gate-box">GATE_4: (GATE_1 OR GATE_2 result) = [??]</div>
+                <p style="color:#fff; margin-top:15px;">THE KEY IS: "KEY-" + THE 4 RESULTS (e.g., KEY-1101)</p>
+                <div class="logic-hint">
+                    HINT: [AND] needs both to be 1. [OR] needs at least one to be 1. [NOT] flips the number.
+                </div>
+            </div>`;
+    }
+}
+
+let navStep = 0;      // which move in the sequence we're on
+let navCellsLeft = 0; // how many more presses needed to complete the current move
+
+function loadNavRound() {
+    clearInterval(timerInterval);
+    const r = navRounds[navRound];
+    playerPos = { x: 0, y: 0 };
+    navStep = 0;
+    navCellsLeft = Math.abs(r.moves[0].n);
+
+    header.innerText = `SUB-ROUTINE 02: BLIND NAVIGATION — ROUND ${navRound + 1}/3`;
+    instr.innerHTML = `FOLLOW ROUTE: ${r.route}<br><span style="color:var(--fail);font-size:0.85rem;letter-spacing:2px;">⚠ WARNING: ALL DIRECTIONAL INPUTS HAVE BEEN REVERSED</span>`;
+    mainInp.classList.add('hidden');
+    document.getElementById('check-btn').classList.add('hidden');
+    timerBar.classList.remove('hidden');
+
+    drawGrid(r.gridSize);
+    startTimer(r.time, () => {
+        triggerFail();
+        navRound = 0;
+        generateNavRounds();
+        loadNavRound();
+    });
+}
+
+function drawGrid(size) {
+    if (!size) size = navRounds[navRound] ? navRounds[navRound].gridSize : 15;
+    const cellSize = Math.max(16, Math.floor(560 / size));
+    let mazeHtml = `<div class="maze-grid" style="grid-template-columns: repeat(${size}, ${cellSize}px);">`;
+    for(let y=0; y<size; y++) {
+        for(let x=0; x<size; x++) {
+            let classes = "m-cell";
+            let label = "";
+            if(x===0 && y===0 && navStep===0) label = "S";
+            if(x===playerPos.x && y===playerPos.y) { classes += " m-player"; label = "▮"; }
+            mazeHtml += `<div class="${classes}" style="width:${cellSize}px;height:${cellSize}px;">${label}</div>`;
+        }
+    }
+    // Show step progress below grid
+    const r = navRounds[navRound];
+    const progressParts = r ? r.moves.map((m, i) => {
+        const label = (m.n > 0 ? (m.d==='x'?'R':'D') : (m.d==='x'?'L':'U')) + Math.abs(m.n);
+        if (i < navStep) return `<span style="color:#555;text-decoration:line-through">${label}</span>`;
+        if (i === navStep) return `<span style="color:var(--neon);font-weight:bold;text-shadow:0 0 8px var(--neon)">${label}</span>`;
+        return `<span style="color:#444">${label}</span>`;
+    }) : [];
+    content.innerHTML = mazeHtml + '</div>' +
+        `<div style="margin-top:10px;letter-spacing:3px;font-size:0.85rem;text-align:center">${progressParts.join(' → ')}</div>`;
+}
+
+window.addEventListener('keydown', (e) => {
+    // Security: block dev tools shortcuts
+    if (e.keyCode == 123 ||
+        (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0))) ||
+        (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0))) {
+        alert("!! SECURITY ALERT: KEYBOARD BYPASS ATTEMPTED !!");
+        e.preventDefault();
+        return false;
+    }
+
+    if(currentLvl !== 2) return;
+    const r = navRounds[navRound];
+    if (!r) return;
+
+    // Map key to axis and sign — ALL DIRECTIONS REVERSED
+    const keyMap = {
+        ArrowRight: { d: 'x', sign: -1 },
+        ArrowLeft:  { d: 'x', sign:  1 },
+        ArrowDown:  { d: 'y', sign: -1 },
+        ArrowUp:    { d: 'y', sign:  1 },
+    };
+    if (!keyMap[e.key]) return;
+    e.preventDefault();
+
+    const pressed = keyMap[e.key];
+    const expected = r.moves[navStep];
+    const expectedSign = expected.n > 0 ? 1 : -1;
+
+    if (pressed.d === expected.d && pressed.sign === expectedSign) {
+        // Correct — move 1 cell in the right direction
+        playerPos[expected.d] += pressed.sign;
+        navCellsLeft--;
+        drawGrid(r.gridSize);
+
+        if (navCellsLeft === 0) {
+            // Finished all cells for this move, advance to next
+            navStep++;
+            if (navStep >= r.moves.length) {
+                // All moves complete — round done
+                clearInterval(timerInterval);
+                navRound++;
+                if (navRound >= navRounds.length) {
+                    currentLvl++;
+                    loadLevel();
+                } else {
+                    loadNavRound();
+                }
+            } else {
+                navCellsLeft = Math.abs(r.moves[navStep].n);
+            }
+        }
+    } else {
+        // Wrong direction — fail, reset to round 1
+        triggerFail();
+        clearInterval(timerInterval);
+        navRound = 0;
+        generateNavRounds();
+        loadNavRound();
+    }
+});
+
+function startTimer(seconds, onComplete) {
+    timeLeft = seconds;
+    let fired = false;
+    timerInterval = setInterval(() => {
+        timeLeft -= 0.1;
+        document.getElementById('timer-fill').style.width = (timeLeft / seconds * 100) + "%";
+        if(timeLeft <= 0 && !fired) {
+            fired = true;
+            clearInterval(timerInterval);
+            onComplete();
+        }
+    }, 100);
+}
+
+function checkAnswer() {
+    let val = mainInp.value.toUpperCase().trim();
+    let pass = false;
+
+    if (currentLvl === 1 && val === "241") pass = true;
+    if (currentLvl === 3 && val === "SENSOR") pass = true;
+    if (currentLvl === 4 && val === "78") pass = true;
+    if (currentLvl === 5 && val === "KEY-0111") pass = true;
+
+    if (pass) { 
+        currentLvl++; 
+        if(currentLvl > 5) finish(); 
+        else loadLevel();
+    } else { 
+        triggerFail(); 
+    }
+}
+
+function triggerFail() {
+    document.getElementById('monitor').classList.add('shake');
+    document.getElementById('status-msg').innerText = "CALIBRATION ERROR";
+    setTimeout(() => { document.getElementById('monitor').classList.remove('shake'); document.getElementById('status-msg').innerText = ""; }, 800);
+}
+
+function finish() {
+    document.getElementById('game-zone').classList.add('hidden');
+    document.getElementById('success').classList.remove('hidden');
+}
+
+mainInp.addEventListener('keypress', (e) => { if(e.key === 'Enter') checkAnswer(); });
+</script>
+
+<script>
+    // Disable Right-Click menu
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        alert("!! SECURITY ALERT: UNAUTHORIZED SYSTEM INSPECTION DETECTED !!");
+    });
+</script>
+
+</body>
+</html>
